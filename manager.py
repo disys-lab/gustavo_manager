@@ -91,13 +91,16 @@ def check_authorized(permission_needed=None, permission_object_type=None):
         elif permission_object_type == "pruning":
             if user_permissions["pruning_allowed"] is True:
                 allow_access = True
-        # in any other case allow access if the permission needed is in the permission list of the user in the db
+        # in any other case allow access if the permission needed is in the permission list of the user in the db.
+        # "rw" access also satisfies an "ro" requirement on the same resource (write implies read) - previously
+        # this was an exact match, so a user granted "rw" on a resource could not pass an "ro"-gated check on
+        # that same resource.
         elif permission_object_type == "apps" or permission_object_type == "device_groups" or \
                 permission_object_type == "cron_jobs":
-            for permission_key, permission_value in user_permissions[permission_object_type].items():
-                if permission_needed == {permission_key: permission_value}:
-                    allow_access = True
-                    break
+            required_resource, required_level = next(iter(permission_needed.items()))
+            granted_level = user_permissions[permission_object_type].get(required_resource)
+            if granted_level == required_level or (granted_level == "rw" and required_level == "ro"):
+                allow_access = True
     return allow_access
 
 
