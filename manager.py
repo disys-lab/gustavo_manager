@@ -299,6 +299,8 @@ def create_app(app_name):
             devices = return_sane_default_if_not_declared("devices", app_json, [])
             privileged = return_sane_default_if_not_declared("privileged", app_json, False)
             rolling_restart = return_sane_default_if_not_declared("rolling_restart", app_json, False)
+            command = return_sane_default_if_not_declared("command", app_json, [])
+            shm_size = return_sane_default_if_not_declared("shm_size", app_json, "")
         except:
             return json.dumps(find_missing_params(app_json, ["docker_image"])), 400
         # check edge case of port being outside of possible port ranges
@@ -307,7 +309,8 @@ def create_app(app_name):
             return ports_check_return_message, port_check_return_code
         # update the db
         app_json = mongo_connection.mongo_add_app(app_name, starting_ports, containers_per, env_vars, docker_image,
-                                                  running, networks, volumes, devices, privileged, rolling_restart)
+                                                  running, networks, volumes, devices, privileged, rolling_restart,
+                                                  command, shm_size)
         return dumps(app_json), 200
 
 

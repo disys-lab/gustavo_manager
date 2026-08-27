@@ -111,7 +111,8 @@ class MongoConnection:
 
     # add app
     def mongo_add_app(self, app_name, starting_ports, containers_per, env_vars, docker_image, running=True,
-                      networks=None, volumes=None, devices=None, privileged=False, rolling_restart=False):
+                      networks=None, volumes=None, devices=None, privileged=False, rolling_restart=False,
+                      command=None, shm_size=""):
         # creating the list inside the function to avoid mutable value list in the function default value
         if volumes is None:
             volumes = []
@@ -119,6 +120,8 @@ class MongoConnection:
             devices = []
         if networks is None:
             networks = ["nebula"]
+        if command is None:
+            command = []
         app_doc = {
             "app_id": 1,
             "app_name": app_name,
@@ -131,7 +134,9 @@ class MongoConnection:
             "volumes": volumes,
             "devices": devices,
             "privileged": privileged,
-            "rolling_restart": rolling_restart
+            "rolling_restart": rolling_restart,
+            "command": command,
+            "shm_size": shm_size
         }
         insert_id = self.collection["apps"].insert_one(app_doc).inserted_id
         ignored_app_existence_status, result = self.mongo_get_app(app_name)
