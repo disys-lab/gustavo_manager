@@ -370,13 +370,15 @@ class MongoConnection:
 
     # add cron_job
     def mongo_add_cron_job(self, cron_job_name, schedule, env_vars, docker_image, running=True, networks=None,
-                           volumes=None, devices=None, privileged=False):
+                           volumes=None, devices=None, privileged=False, command=None, shm_size=""):
         if volumes is None:
             volumes = []
         if devices is None:
             devices = []
         if networks is None:
             networks = ["nebula"]
+        if command is None:
+            command = []
         cron_job_doc = {
             "cron_job_id": 1,
             "cron_job_name": cron_job_name,
@@ -387,7 +389,9 @@ class MongoConnection:
             'networks': networks,
             "volumes": volumes,
             "devices": devices,
-            "privileged": privileged
+            "privileged": privileged,
+            "command": command,
+            "shm_size": shm_size
         }
         insert_id = self.collection["cron_jobs"].insert_one(cron_job_doc).inserted_id
         ignored_cron_job_existence_status, result = self.mongo_get_cron_job(cron_job_name)
