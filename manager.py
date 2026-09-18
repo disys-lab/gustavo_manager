@@ -939,6 +939,8 @@ def create_cron_job(cron_job):
             volumes = return_sane_default_if_not_declared("volumes", cron_job_json, [])
             devices = return_sane_default_if_not_declared("devices", cron_job_json, [])
             privileged = return_sane_default_if_not_declared("privileged", cron_job_json, False)
+            command = return_sane_default_if_not_declared("command", cron_job_json, [])
+            shm_size = return_sane_default_if_not_declared("shm_size", cron_job_json, "")
         except:
             return json.dumps(find_missing_params(cron_job_json, ["docker_image", "schedule"])), 400
         # check edge case where schedule is not valid
@@ -946,7 +948,7 @@ def create_cron_job(cron_job):
             return jsonify({"schedule_valid": False}), 400
         # update the db
         cron_job_json = mongo_connection.mongo_add_cron_job(cron_job, schedule, env_vars, docker_image, running,
-                                                            networks, volumes, devices, privileged)
+                                                            networks, volumes, devices, privileged, command, shm_size)
         return dumps(cron_job_json), 200
 
 
